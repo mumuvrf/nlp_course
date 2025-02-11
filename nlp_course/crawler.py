@@ -4,6 +4,11 @@ from typing import List
 import requests
 from bs4 import BeautifulSoup
 
+import re
+
+re_handle = '@[A-Za-z0-9_.-]+'
+re_hashtag = '#[A-Za-z0-9]+'
+re_zipcode = '\d{5}-\d{3}'
 
 def get_data(url: str) -> List[str]:
     try:
@@ -11,6 +16,16 @@ def get_data(url: str) -> List[str]:
     except requests.exceptions.Timeout:
         return []
     soup = BeautifulSoup(response.text, 'html.parser')
+    page_text = soup.get_text()
+    
+    handles = re.findall(re_handle, page_text)
+    print("Handles: ", handles)
+
+    hashtags = re.findall(re_hashtag, page_text)
+    print("Hashtags: ", hashtags)
+
+    zipcodes = re.findall(re_zipcode, page_text)
+    print("Zip Codes: ", zipcodes)
 
     title = soup.title.string if soup.title else 'No title found'
 
@@ -48,3 +63,5 @@ def crawl(
             if link not in visited:
                 q.put(link)
     return visited, saved_info
+
+crawl("https://ww2.trt2.jus.br/contato/telefones-e-enderecos/unidade-rio-branco", 5)
